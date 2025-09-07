@@ -2,10 +2,10 @@ import Link from "next/link";
 
 import LogoutButton from "@/components/custom/logout-button";
 import { Button } from "@/components/ui/button";
-import { getCurrentSession } from "@/lib/auth/sessions";
+import { auth } from "@/lib/auth";
 
 export default async function Page() {
-  const { session, user } = await getCurrentSession();
+  const { session, user } = await auth();
 
   return (
     <div className="mx-auto flex h-svh max-w-md flex-col items-center justify-center p-4">

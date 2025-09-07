@@ -2,12 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { getCurrentSession } from "@/lib/auth/sessions";
+import { auth } from "@/lib/auth";
 
 import { LogInForm } from "./login-form";
 
 export default async function Page() {
-  const { user } = await getCurrentSession();
+  const { user } = await auth();
   if (user) redirect("/");
 
   return (

@@ -9,8 +9,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Fenrir",
-  description: "A project by Nicholas Ly.",
+  title: "Anko",
+  description: "Spaced repetition applied to Leetcode problems.",
 };
 
 export default function RootLayout({

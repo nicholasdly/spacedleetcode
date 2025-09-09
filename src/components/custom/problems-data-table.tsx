@@ -7,6 +7,7 @@ import { use } from "react";
 import StudyDialog from "@/components/custom/study-dialog";
 import { Collection, Problem, Study } from "@/db/types";
 import { slugify } from "@/lib/utils";
+import { UTCDate, utc } from "@date-fns/utc";
 import { ColumnDef } from "@tanstack/react-table";
 
 import { DataTable } from "../ui/data-table";
@@ -68,7 +69,7 @@ const columns: ColumnDef<TableData[string][number]>[] = [
         return <div className="text-purple-400">new</div>;
       }
 
-      const days = differenceInCalendarDays(due, new Date());
+      const days = differenceInCalendarDays(due, new UTCDate(), { in: utc });
       if (days < 0) return <div className="text-red-400">overdue</div>;
       if (days === 0) return <div className="text-green-400">today</div>;
       if (days === 1) return <div className="text-neutral-500">tomorrow</div>;

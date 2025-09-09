@@ -1,3 +1,4 @@
+import { differenceInCalendarDays } from "date-fns";
 import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
@@ -5,7 +6,8 @@ import { useRef } from "react";
 import { Problem, Rating, Study } from "@/db/types";
 import { useAttempt } from "@/hooks/use-attempt";
 import { useIsMobile } from "@/hooks/use-is-mobile";
-import { estimateNewInterval } from "@/lib/repetition";
+import { calculateDueDate, calculateNewInterval } from "@/lib/repetition";
+import { UTCDate, utc } from "@date-fns/utc";
 import { DialogClose } from "@radix-ui/react-dialog";
 
 import { Button } from "../ui/button";
@@ -23,7 +25,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 function getTooltipText(interval: number, ease: number, rating: Rating) {
   if (rating === "again") return "Tomorrow";
 
-  const days = estimateNewInterval(interval, ease, rating);
+  const due = calculateDueDate(calculateNewInterval(interval, ease, rating));
+  const days = differenceInCalendarDays(due, new UTCDate(), { in: utc });
+
   return days > 1 ? `${days} days` : `${days} day`;
 }
 

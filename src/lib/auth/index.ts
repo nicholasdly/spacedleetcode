@@ -5,6 +5,7 @@ import { cache } from "react";
 import { db } from "@/db";
 import { sessionsTable, usersTable } from "@/db/schema";
 import { Session, User } from "@/db/types";
+import { UTCDate } from "@date-fns/utc";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeHexLowerCase } from "@oslojs/encoding";
 
@@ -51,14 +52,14 @@ export const auth = cache(
       if (!user || !session) return { session: null, user: null };
 
       // Deletes session if expired.
-      if (Date.now() >= session.expiresAt.getTime()) {
+      if (UTCDate.now() >= session.expiresAt.getTime()) {
         await tx.delete(sessionsTable).where(eq(sessionsTable.id, session.id));
         return { session: null, user: null };
       }
 
       // Extends the session expiration when it's near expiration (half of life).
-      if (Date.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
-        session.expiresAt = new Date(Date.now() + sessionDuration);
+      if (UTCDate.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
+        session.expiresAt = new UTCDate(UTCDate.now() + sessionDuration);
         await tx
           .update(sessionsTable)
           .set({ expiresAt: session.expiresAt })

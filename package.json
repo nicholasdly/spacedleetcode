@@ -17,6 +17,7 @@
     "db:seed": "tsx ./src/db/scripts/seed.ts"
   },
   "dependencies": {
+    "@date-fns/utc": "^2.1.1",
     "@hookform/resolvers": "^5.2.1",
     "@neondatabase/serverless": "^1.0.1",
     "@node-rs/argon2": "^2.0.2",

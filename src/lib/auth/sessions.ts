@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { db } from "@/db";
 import { sessionsTable, usersTable } from "@/db/schema";
 import { Session, User } from "@/db/types";
+import { UTCDate } from "@date-fns/utc";
 import { sha256 } from "@oslojs/crypto/sha2";
 import {
   encodeBase32LowerCaseNoPadding,
@@ -40,7 +41,7 @@ export async function createSession(
   userId: string,
 ): Promise<Session> {
   const id = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-  const expiresAt = new Date(Date.now() + sessionDuration);
+  const expiresAt = new UTCDate(UTCDate.now() + sessionDuration);
 
   const [session] = await db
     .insert(sessionsTable)
@@ -83,14 +84,14 @@ export async function getCurrentSession(): Promise<
     if (!user || !session) return { session: null, user: null };
 
     // Deletes session if expired.
-    if (Date.now() >= session.expiresAt.getTime()) {
+    if (UTCDate.now() >= session.expiresAt.getTime()) {
       tx.delete(sessionsTable).where(eq(sessionsTable.id, session.id));
       return { session: null, user: null };
     }
 
     // Extends the session expiration when it's near expiration (half of life).
-    if (Date.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
-      session.expiresAt = new Date(Date.now() + sessionDuration);
+    if (UTCDate.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
+      session.expiresAt = new UTCDate(UTCDate.now() + sessionDuration);
       tx.update(sessionsTable)
         .set({ expiresAt: session.expiresAt })
         .where(eq(sessionsTable.id, session.id));
@@ -120,7 +121,9 @@ export async function invalidateAllSessions(userId: string): Promise<void> {
  * Deletes all expired sessions from the database.
  */
 export async function invalidateExpiredSessions() {
-  await db.delete(sessionsTable).where(lt(sessionsTable.expiresAt, new Date()));
+  await db
+    .delete(sessionsTable)
+    .where(lt(sessionsTable.expiresAt, new UTCDate()));
 }
 
 /**

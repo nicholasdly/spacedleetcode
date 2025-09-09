@@ -4,7 +4,8 @@ import { eq, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 
 import { db } from "@/db";
-import { Session, User, sessions, users } from "@/db/schema";
+import { sessionsTable, usersTable } from "@/db/schema";
+import { Session, User } from "@/db/types";
 import { sha256 } from "@oslojs/crypto/sha2";
 import {
   encodeBase32LowerCaseNoPadding,
@@ -42,7 +43,7 @@ export async function createSession(
   const expiresAt = new Date(Date.now() + sessionDuration);
 
   const [session] = await db
-    .insert(sessions)
+    .insert(sessionsTable)
     .values({ id, userId, expiresAt })
     .returning();
 
@@ -68,12 +69,12 @@ export async function getCurrentSession(): Promise<
   return await db.transaction(async (tx) => {
     const [data] = await tx
       .select({
-        user: users,
-        session: sessions,
+        user: usersTable,
+        session: sessionsTable,
       })
-      .from(sessions)
-      .innerJoin(users, eq(sessions.userId, users.id))
-      .where(eq(sessions.id, sessionId))
+      .from(sessionsTable)
+      .innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
+      .where(eq(sessionsTable.id, sessionId))
       .limit(1);
 
     const user = data?.user;
@@ -83,17 +84,16 @@ export async function getCurrentSession(): Promise<
 
     // Deletes session if expired.
     if (Date.now() >= session.expiresAt.getTime()) {
-      await tx.delete(sessions).where(eq(sessions.id, session.id));
+      tx.delete(sessionsTable).where(eq(sessionsTable.id, session.id));
       return { session: null, user: null };
     }
 
     // Extends the session expiration when it's near expiration (half of life).
     if (Date.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
       session.expiresAt = new Date(Date.now() + sessionDuration);
-      await tx
-        .update(sessions)
+      tx.update(sessionsTable)
         .set({ expiresAt: session.expiresAt })
-        .where(eq(sessions.id, session.id));
+        .where(eq(sessionsTable.id, session.id));
     }
 
     return { session, user };
@@ -105,7 +105,7 @@ export async function getCurrentSession(): Promise<
  * @param sessionId The session's ID.
  */
 export async function invalidateSession(sessionId: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.id, sessionId));
+  await db.delete(sessionsTable).where(eq(sessionsTable.id, sessionId));
 }
 
 /**
@@ -113,14 +113,14 @@ export async function invalidateSession(sessionId: string): Promise<void> {
  * @param userId The user's ID.
  */
 export async function invalidateAllSessions(userId: string): Promise<void> {
-  await db.delete(sessions).where(eq(sessions.userId, userId));
+  await db.delete(sessionsTable).where(eq(sessionsTable.userId, userId));
 }
 
 /**
  * Deletes all expired sessions from the database.
  */
 export async function invalidateExpiredSessions() {
-  await db.delete(sessions).where(lt(sessions.expiresAt, new Date()));
+  await db.delete(sessionsTable).where(lt(sessionsTable.expiresAt, new Date()));
 }
 
 /**

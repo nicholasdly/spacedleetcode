@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useRegister } from "@/hooks/use-register";
-import { registerFormSchema } from "@/lib/auth/schemas";
+import { registerFormSchema } from "@/lib/validation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 export function RegisterForm() {

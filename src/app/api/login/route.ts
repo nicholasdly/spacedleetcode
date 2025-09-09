@@ -1,9 +1,14 @@
-import { eq } from "drizzle-orm";
+import {
+  InferInsertModel,
+  and,
+  eq,
+  getTableColumns,
+  isNull,
+} from "drizzle-orm";
 
 import { db } from "@/db";
-import { users } from "@/db/schema";
+import { problemsTable, studiesTable, usersTable } from "@/db/schema";
 import { verifyPassword } from "@/lib/auth/passwords";
-import { loginFormSchema } from "@/lib/auth/schemas";
 import {
   createSession,
   generateSessionToken,
@@ -11,8 +16,14 @@ import {
   invalidateExpiredSessions,
   setSessionTokenCookie,
 } from "@/lib/auth/sessions";
+import { loginFormSchema } from "@/lib/validation";
 
-export async function POST(request: Request) {
+/**
+ * Logs in a user, creating a new database session.
+ * @param request The HTTP request.
+ * @returns An HTTP response.
+ */
+export async function POST(request: Request): Promise<Response> {
   // TODO: Implement rate limiting
 
   const { session: currentSession } = await getCurrentSession();
@@ -26,8 +37,8 @@ export async function POST(request: Request) {
 
   const [user] = await db
     .select()
-    .from(users)
-    .where(eq(users.email, email))
+    .from(usersTable)
+    .where(eq(usersTable.email, email))
     .limit(1);
 
   // Avoid returning at early here to prevent malicious actors from easily
@@ -41,6 +52,31 @@ export async function POST(request: Request) {
     // TODO: Implement throttling on failed login attempts
     return new Response(null, { status: 401 });
   }
+
+  await db.transaction(async (tx) => {
+    const problems = await tx
+      .select({ ...getTableColumns(problemsTable) })
+      .from(problemsTable)
+      .leftJoin(
+        studiesTable,
+        and(
+          eq(studiesTable.id, problemsTable.id),
+          eq(studiesTable.userId, user.id),
+        ),
+      )
+      .where(isNull(studiesTable.id));
+
+    if (problems.length <= 0) return;
+
+    const studies: InferInsertModel<typeof studiesTable>[] = problems.map(
+      (problem) => ({
+        userId: user.id,
+        problemId: problem.id,
+      }),
+    );
+
+    await tx.insert(studiesTable).values(studies);
+  });
 
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id);

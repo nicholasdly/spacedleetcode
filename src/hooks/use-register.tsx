@@ -3,8 +3,8 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
-import { registerFormSchema } from "@/lib/auth/schemas";
 import { tc } from "@/lib/utils";
+import { registerFormSchema } from "@/lib/validation";
 
 export async function register(values: z.infer<typeof registerFormSchema>) {
   const [response] = await tc(
@@ -43,7 +43,7 @@ export function useRegister() {
     startTransition(async () => {
       const { success, error } = await register(values);
       if (success) {
-        router.push("/");
+        router.push("/study");
       } else {
         toast.error(error);
       }

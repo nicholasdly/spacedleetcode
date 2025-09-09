@@ -3,7 +3,8 @@ import { cookies } from "next/headers";
 import { cache } from "react";
 
 import { db } from "@/db";
-import { Session, User, sessions, users } from "@/db/schema";
+import { sessionsTable, usersTable } from "@/db/schema";
+import { Session, User } from "@/db/types";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeHexLowerCase } from "@oslojs/encoding";
 
@@ -33,15 +34,15 @@ export const auth = cache(
       const [data] = await tx
         .select({
           user: {
-            id: users.id,
-            email: users.email,
-            createdAt: users.createdAt,
+            id: usersTable.id,
+            email: usersTable.email,
+            createdAt: usersTable.createdAt,
           },
-          session: sessions,
+          session: sessionsTable,
         })
-        .from(sessions)
-        .innerJoin(users, eq(sessions.userId, users.id))
-        .where(eq(sessions.id, sessionId))
+        .from(sessionsTable)
+        .innerJoin(usersTable, eq(sessionsTable.userId, usersTable.id))
+        .where(eq(sessionsTable.id, sessionId))
         .limit(1);
 
       const user = data?.user as SanitizedUser;
@@ -51,7 +52,7 @@ export const auth = cache(
 
       // Deletes session if expired.
       if (Date.now() >= session.expiresAt.getTime()) {
-        await tx.delete(sessions).where(eq(sessions.id, session.id));
+        await tx.delete(sessionsTable).where(eq(sessionsTable.id, session.id));
         return { session: null, user: null };
       }
 
@@ -59,9 +60,9 @@ export const auth = cache(
       if (Date.now() >= session.expiresAt.getTime() - sessionDuration / 2) {
         session.expiresAt = new Date(Date.now() + sessionDuration);
         await tx
-          .update(sessions)
+          .update(sessionsTable)
           .set({ expiresAt: session.expiresAt })
-          .where(eq(sessions.id, session.id));
+          .where(eq(sessionsTable.id, session.id));
       }
 
       return { session, user };

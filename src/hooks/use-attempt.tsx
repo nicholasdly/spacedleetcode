@@ -3,12 +3,13 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { Rating } from "@/db/types";
 import { tc } from "@/lib/utils";
-import { loginFormSchema } from "@/lib/validation";
+import { attemptSchema } from "@/lib/validation";
 
-export async function login(values: z.infer<typeof loginFormSchema>) {
+export async function attempt(values: z.infer<typeof attemptSchema>) {
   const [response] = await tc(
-    fetch("/api/login", {
+    fetch("/api/attempts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
@@ -22,33 +23,26 @@ export async function login(values: z.infer<typeof loginFormSchema>) {
     };
   }
 
-  if (response?.status === 401) {
-    return {
-      success: false as const,
-      error: "Incorrect email or password.",
-    };
-  }
-
   return {
     success: false as const,
     error: "Something went wrong! Try again later.",
   };
 }
 
-export function useLogin() {
+export function useAttempt(studyId: string) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
-  const action = async (values: z.infer<typeof loginFormSchema>) => {
+  const action = async (rating: Rating) => {
     startTransition(async () => {
-      const { success, error } = await login(values);
+      const { success, error } = await attempt({ studyId, rating });
       if (success) {
-        router.push("/study");
+        router.refresh();
       } else {
         toast.error(error);
       }
     });
   };
 
-  return { login: action, isPending };
+  return { attempt: action, isPending };
 }

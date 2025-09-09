@@ -1,0 +1,26 @@
+import Link from "next/link";
+import { redirect } from "next/navigation";
+
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
+
+export default async function Page() {
+  const { user } = await auth();
+  if (user) redirect("/study");
+
+  return (
+    <div className="mx-auto flex h-svh max-w-md flex-col items-center justify-center p-4">
+      <header className="mb-3">
+        <h1 className="font-semibold">nicholasdly/fenrir</h1>
+      </header>
+      <main className="flex items-center gap-1.5">
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/login">Sign in</Link>
+        </Button>
+        <Button size="sm" variant="outline" asChild>
+          <Link href="/register">Register</Link>
+        </Button>
+      </main>
+    </div>
+  );
+}

@@ -5,9 +5,14 @@ import {
   invalidateSession,
 } from "@/lib/auth/sessions";
 
-export async function DELETE() {
+/**
+ * Logs out a user, invalidating their session and expired sessions.
+ * @param request The HTTP request.
+ * @returns An HTTP response.
+ */
+export async function DELETE(): Promise<Response> {
   const { session } = await getCurrentSession();
-  if (!session) return new Response(null, { status: 403 });
+  if (!session) return new Response(null, { status: 401 });
 
   await Promise.all([
     invalidateSession(session.id),

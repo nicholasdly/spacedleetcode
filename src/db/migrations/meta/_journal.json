@@ -22,6 +22,13 @@
       "when": 1757394287679,
       "tag": "0002_harsh_spectrum",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1757444313809,
+      "tag": "0003_good_zeigeist",
+      "breakpoints": true
     }
   ]
 }

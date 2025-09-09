@@ -1,22 +1,70 @@
-import { asc, desc, eq, getTableColumns } from "drizzle-orm";
+import {
+  InferInsertModel,
+  and,
+  asc,
+  desc,
+  eq,
+  getTableColumns,
+  isNull,
+  sql,
+} from "drizzle-orm";
 
 import { db } from ".";
-import { problemsTable, studiesTable } from "./schema";
+import {
+  collectionProblemsTable,
+  collectionsTable,
+  problemsTable,
+  studiesTable,
+} from "./schema";
 
-export async function getStudyProblems(userId: string) {
-  const data = await db
-    .select({
-      problem: getTableColumns(problemsTable),
-      study: getTableColumns(studiesTable),
-    })
-    .from(studiesTable)
-    .innerJoin(problemsTable, eq(studiesTable.problemId, problemsTable.id))
-    .where(eq(studiesTable.userId, userId))
-    .orderBy(
-      asc(studiesTable.dueAt),
-      desc(studiesTable.ease),
-      asc(problemsTable.difficulty),
+export const getStudyProblemCollections = db
+  .select({
+    study: getTableColumns(studiesTable),
+    problem: getTableColumns(problemsTable),
+    collection: getTableColumns(collectionsTable),
+  })
+  .from(studiesTable)
+  .innerJoin(problemsTable, eq(problemsTable.id, studiesTable.problemId))
+  .innerJoin(
+    collectionProblemsTable,
+    eq(collectionProblemsTable.problemId, problemsTable.id),
+  )
+  .innerJoin(
+    collectionsTable,
+    eq(collectionsTable.id, collectionProblemsTable.collectionId),
+  )
+  .where(eq(studiesTable.userId, sql.placeholder("userId")))
+  .orderBy(
+    asc(studiesTable.dueAt),
+    desc(studiesTable.ease),
+    asc(problemsTable.difficulty),
+    asc(problemsTable.topic),
+  )
+  .prepare("get_study_problem_collections");
+
+export async function seedUser(userId: string) {
+  await db.transaction(async (tx) => {
+    const problems = await tx
+      .select({ ...getTableColumns(problemsTable) })
+      .from(problemsTable)
+      .leftJoin(
+        studiesTable,
+        and(
+          eq(studiesTable.problemId, problemsTable.id),
+          eq(studiesTable.userId, userId),
+        ),
+      )
+      .where(isNull(studiesTable.id));
+
+    if (problems.length <= 0) return;
+
+    const studies: InferInsertModel<typeof studiesTable>[] = problems.map(
+      (problem) => ({
+        userId,
+        problemId: problem.id,
+      }),
     );
 
-  return data;
+    await tx.insert(studiesTable).values(studies);
+  });
 }

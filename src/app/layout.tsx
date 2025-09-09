@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 
 import "./globals.css";
 
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {children}
+        <NuqsAdapter>{children}</NuqsAdapter>
         <Toaster theme="light" position="bottom-center" richColors />
       </body>
     </html>

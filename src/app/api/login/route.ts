@@ -1,13 +1,8 @@
-import {
-  InferInsertModel,
-  and,
-  eq,
-  getTableColumns,
-  isNull,
-} from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { problemsTable, studiesTable, usersTable } from "@/db/schema";
+import { seedUser } from "@/db/queries";
+import { usersTable } from "@/db/schema";
 import { verifyPassword } from "@/lib/auth/passwords";
 import {
   createSession,
@@ -53,30 +48,7 @@ export async function POST(request: Request): Promise<Response> {
     return new Response(null, { status: 401 });
   }
 
-  await db.transaction(async (tx) => {
-    const problems = await tx
-      .select({ ...getTableColumns(problemsTable) })
-      .from(problemsTable)
-      .leftJoin(
-        studiesTable,
-        and(
-          eq(studiesTable.problemId, problemsTable.id),
-          eq(studiesTable.userId, user.id),
-        ),
-      )
-      .where(isNull(studiesTable.id));
-
-    if (problems.length <= 0) return;
-
-    const studies: InferInsertModel<typeof studiesTable>[] = problems.map(
-      (problem) => ({
-        userId: user.id,
-        problemId: problem.id,
-      }),
-    );
-
-    await tx.insert(studiesTable).values(studies);
-  });
+  await seedUser(user.id);
 
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id);

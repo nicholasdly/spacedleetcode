@@ -1,7 +1,8 @@
-import { InferInsertModel, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
-import { problemsTable, studiesTable, usersTable } from "@/db/schema";
+import { seedUser } from "@/db/queries";
+import { usersTable } from "@/db/schema";
 import { hashPassword } from "@/lib/auth/passwords";
 import {
   createSession,
@@ -39,29 +40,17 @@ export async function POST(request: Request): Promise<Response> {
   const passwordHash = await hashPassword(password);
 
   const user = await db.transaction(async (tx) => {
-    const users = await tx
+    const [user] = await tx
       .insert(usersTable)
       .values({ email, passwordHash })
       .returning();
 
-    const user = users[0]!; // Will always return the new user.
-
-    const problems = await tx.select().from(problemsTable);
-    if (problems.length <= 0) return user;
-
-    const studies: InferInsertModel<typeof studiesTable>[] = problems.map(
-      (problem) => ({
-        userId: user.id,
-        problemId: problem.id,
-      }),
-    );
-
-    await tx.insert(studiesTable).values(studies);
-
-    return user;
+    return user!;
   });
 
   // TODO: Implement email verification
+
+  await seedUser(user.id);
 
   const sessionToken = generateSessionToken();
   const session = await createSession(sessionToken, user.id);

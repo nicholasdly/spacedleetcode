@@ -36,9 +36,9 @@ export function calculateNewInterval(
 
   let interval = currentInterval;
 
-  if (rating === "hard") interval = Math.min(7, interval * 1.2);
-  if (rating === "good") interval = Math.min(14, interval * ease);
-  if (rating === "easy") interval = Math.min(30, interval * ease * 1.3);
+  if (rating === "hard") interval = Math.min(14, interval * 1.2);
+  if (rating === "good") interval = Math.min(30, interval * ease);
+  if (rating === "easy") interval = Math.min(60, interval * ease * 1.2);
 
   // // Applies a bit of randomness to the interval to prevent clumping.
   // const random = Math.random();

@@ -4,7 +4,7 @@ import { differenceInCalendarDays } from "date-fns";
 import { useQueryState } from "nuqs";
 import { use } from "react";
 
-import ReviewDialog from "@/components/custom/review-dialog";
+import StudyDialog from "@/components/custom/study-dialog";
 import { Collection, Problem, Study } from "@/db/types";
 import { slugify } from "@/lib/utils";
 import { ColumnDef } from "@tanstack/react-table";
@@ -33,7 +33,7 @@ const columns: ColumnDef<TableData[string][number]>[] = [
     accessorKey: "title",
     header: "Title",
     cell: ({ row }) => (
-      <ReviewDialog problem={row.original} study={row.original.study} />
+      <StudyDialog problem={row.original} study={row.original.study} />
     ),
   },
   {

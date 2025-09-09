@@ -2,7 +2,7 @@ import { ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useRef } from "react";
 
-import { Problem, Study } from "@/db/types";
+import { Problem, Rating, Study } from "@/db/types";
 import { useAttempt } from "@/hooks/use-attempt";
 import { useIsMobile } from "@/hooks/use-is-mobile";
 import { estimateNewInterval } from "@/lib/repetition";
@@ -20,7 +20,14 @@ import {
 } from "../ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
-export default function ReviewDialog({
+function getTooltipText(interval: number, ease: number, rating: Rating) {
+  if (rating === "again") return "Tomorrow";
+
+  const days = estimateNewInterval(interval, ease, rating);
+  return days > 1 ? `${days} days` : `${days} day`;
+}
+
+export default function StudyDialog({
   problem,
   study,
 }: {
@@ -34,7 +41,7 @@ export default function ReviewDialog({
 
   return (
     <Dialog>
-      <DialogTrigger className="cursor-pointer text-blue-500 underline-offset-2 hover:text-blue-700 hover:underline">
+      <DialogTrigger className="max-w-48 cursor-pointer text-left text-wrap text-blue-500 underline-offset-2 hover:text-blue-700 hover:underline">
         {problem.title}
       </DialogTrigger>
       <DialogContent
@@ -43,11 +50,12 @@ export default function ReviewDialog({
           problemButtonRef.current?.focus();
         }}
       >
-        <DialogHeader>
+        <DialogHeader className="sm:text-center">
           <DialogTitle>{problem.title}</DialogTitle>
-          <div className="my-2 flex justify-center gap-2 sm:justify-normal">
+          <div className="my-2 flex justify-center gap-2">
             <Button
               ref={problemButtonRef}
+              size="sm"
               variant="outline"
               className="w-fit rounded-full"
               asChild
@@ -58,10 +66,15 @@ export default function ReviewDialog({
                 target="_blank"
               >
                 <p className="text-sm">Problem</p>
-                <ExternalLinkIcon className="size-4" />
+                <ExternalLinkIcon className="size-3.5" />
               </Link>
             </Button>
-            <Button variant="outline" className="w-fit rounded-full" asChild>
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-fit rounded-full"
+              asChild
+            >
               {problem.solution && (
                 <Link
                   className="flex items-center"
@@ -69,12 +82,12 @@ export default function ReviewDialog({
                   target="_blank"
                 >
                   <p className="text-sm">Solution</p>
-                  <ExternalLinkIcon className="size-4" />
+                  <ExternalLinkIcon className="size-3.5" />
                 </Link>
               )}
             </Button>
           </div>
-          <DialogDescription className="text-foreground text-left">
+          <DialogDescription className="text-foreground my-1 text-left">
             {problem.description}
           </DialogDescription>
         </DialogHeader>
@@ -83,53 +96,65 @@ export default function ReviewDialog({
             <Tooltip>
               <TooltipTrigger asChild>
                 <DialogClose asChild>
-                  <Button onClick={() => attempt("again")}>Again</Button>
+                  <Button
+                    variant="outline"
+                    className="border-red-500 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-500"
+                    onClick={() => attempt("again")}
+                  >
+                    Again
+                  </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  &le;{" "}
-                  {estimateNewInterval(study.interval, study.ease, "again")} day
-                </p>
+                <p>{getTooltipText(study.interval, study.ease, "again")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DialogClose asChild>
-                  <Button onClick={() => attempt("hard")}>Hard</Button>
+                  <Button
+                    variant="outline"
+                    className="border-amber-500 bg-amber-50 text-amber-500 hover:bg-amber-100 hover:text-amber-500"
+                    onClick={() => attempt("hard")}
+                  >
+                    Hard
+                  </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  &le; {estimateNewInterval(study.interval, study.ease, "hard")}{" "}
-                  days
-                </p>
+                <p>{getTooltipText(study.interval, study.ease, "hard")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DialogClose asChild>
-                  <Button onClick={() => attempt("good")}>Good</Button>
+                  <Button
+                    variant="outline"
+                    className="border-blue-500 bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-500"
+                    onClick={() => attempt("good")}
+                  >
+                    Good
+                  </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "top"}>
-                <p>
-                  &le; {estimateNewInterval(study.interval, study.ease, "good")}{" "}
-                  days
-                </p>
+                <p>{getTooltipText(study.interval, study.ease, "good")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
                 <DialogClose asChild>
-                  <Button onClick={() => attempt("easy")}>Easy</Button>
+                  <Button
+                    variant="outline"
+                    className="border-green-500 bg-green-50 text-green-500 hover:bg-green-100 hover:text-green-500"
+                    onClick={() => attempt("easy")}
+                  >
+                    Easy
+                  </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "top"}>
-                <p>
-                  &le; {estimateNewInterval(study.interval, study.ease, "easy")}{" "}
-                  days
-                </p>
+                <p>{getTooltipText(study.interval, study.ease, "easy")}</p>
               </TooltipContent>
             </Tooltip>
           </div>

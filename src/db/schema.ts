@@ -79,7 +79,7 @@ export const studiesTable = pgTable("studies", (t) => ({
     }),
   interval: t.real().notNull().default(1),
   ease: t.real().notNull().default(2.2),
-  dueAt: t.timestamp({ withTimezone: true }).notNull().defaultNow(),
+  dueAt: t.timestamp({ withTimezone: true }).notNull().default(new Date(0)),
   updatedAt: t
     .timestamp({ withTimezone: true })
     .notNull()

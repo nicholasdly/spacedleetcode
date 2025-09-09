@@ -15,6 +15,13 @@
       "when": 1757380857141,
       "tag": "0001_polite_thundra",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1757394287679,
+      "tag": "0002_harsh_spectrum",
+      "breakpoints": true
     }
   ]
 }

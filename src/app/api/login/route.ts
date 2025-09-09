@@ -60,7 +60,7 @@ export async function POST(request: Request): Promise<Response> {
       .leftJoin(
         studiesTable,
         and(
-          eq(studiesTable.id, problemsTable.id),
+          eq(studiesTable.problemId, problemsTable.id),
           eq(studiesTable.userId, user.id),
         ),
       )

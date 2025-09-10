@@ -15,7 +15,7 @@ export default async function Page() {
       <Header />
       <main className="flex flex-col">
         <div>
-          <Suspense fallback={<Loading className="my-8" />}>
+          <Suspense fallback={<Loading className="mt-16" />}>
             <ProblemsDataTable promise={promise} />
           </Suspense>
         </div>

@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 
+import { ClerkProvider } from "@clerk/nextjs";
+
 import "./globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -20,11 +22,15 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>
-        <NuqsAdapter>{children}</NuqsAdapter>
-        <Toaster theme="light" position="bottom-center" richColors />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>
+          <NuqsAdapter>
+            {children}
+            <Toaster theme="light" position="bottom-center" richColors />
+          </NuqsAdapter>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

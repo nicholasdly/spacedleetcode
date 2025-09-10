@@ -1,13 +1,8 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
-import { auth } from "@/lib/auth";
 
-export default async function Page() {
-  const { user } = await auth();
-  if (user) redirect("/study");
-
+export default function Page() {
   return (
     <div className="mx-auto flex h-svh max-w-md flex-col items-center justify-center p-4">
       <header className="mb-3">

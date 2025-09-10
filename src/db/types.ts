@@ -6,7 +6,6 @@ import {
   difficultyEnum,
   problemsTable,
   ratingEnum,
-  sessionsTable,
   studiesTable,
   topicEnum,
   usersTable,
@@ -17,7 +16,6 @@ export type Topic = InferEnum<typeof topicEnum>;
 export type Rating = InferEnum<typeof ratingEnum>;
 
 export type User = InferSelectModel<typeof usersTable>;
-export type Session = InferSelectModel<typeof sessionsTable>;
 export type Collection = InferSelectModel<typeof collectionsTable>;
 export type Problem = InferSelectModel<typeof problemsTable>;
 export type Study = InferSelectModel<typeof studiesTable>;

@@ -118,6 +118,12 @@ export default function ProblemsDataTable({
             ))}
           </TabsList>
         )}
+        {collections.length < 1 && (
+          <div className="mt-16 text-center">
+            <p>Looks like there&apos;s nothing here yet.</p>
+            <p>Try refreshing the page!</p>
+          </div>
+        )}
         {collections.map(({ slug, name }) => (
           <TabsContent key={slug} value={slug}>
             <DataTable columns={columns} data={problems[name]!} />

@@ -12,7 +12,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Anko",
+  title: "spacedleetcode.com",
   description: "Spaced repetition applied to Leetcode problems.",
 };
 

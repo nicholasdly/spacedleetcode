@@ -17,6 +17,7 @@
     "db:seed": "tsx ./src/db/scripts/seed.ts"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.31.10",
     "@date-fns/utc": "^2.1.1",
     "@hookform/resolvers": "^5.2.1",
     "@neondatabase/serverless": "^1.0.1",

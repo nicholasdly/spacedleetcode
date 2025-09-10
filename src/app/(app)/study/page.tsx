@@ -1,17 +1,14 @@
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import Header from "@/components/custom/header";
 import Loading from "@/components/custom/loading";
 import ProblemsDataTable from "@/components/custom/problems-data-table";
-import { getStudyProblemCollections } from "@/db/queries";
-import { auth } from "@/lib/auth";
+import { getStudyProblemCollections } from "@/db/prepared";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function Page() {
-  const { user } = await auth();
-  if (!user) redirect("/");
-
-  const promise = getStudyProblemCollections.execute({ userId: user.id });
+  const { userId } = await auth();
+  const promise = getStudyProblemCollections.execute({ userId });
 
   return (
     <div className="mx-auto max-w-2xl space-y-4 p-4">

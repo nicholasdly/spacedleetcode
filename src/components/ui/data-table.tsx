@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  ColumnDef,
+  type ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,

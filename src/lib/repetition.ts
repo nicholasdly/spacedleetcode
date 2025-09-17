@@ -1,5 +1,4 @@
-import { Rating } from "@/db/types";
-import { UTCDate } from "@date-fns/utc";
+export type Rating = "again" | "hard" | "good" | "easy";
 
 /**
  * Calculates an updated ease factor.
@@ -38,7 +37,7 @@ export function calculateNewInterval(
 
   if (rating === "hard") interval = Math.min(14, interval * 1.2);
   if (rating === "good") interval = Math.min(30, interval * ease);
-  if (rating === "easy") interval = Math.min(60, interval * ease * 1.2);
+  if (rating === "easy") interval = Math.min(90, interval * ease * 1.2);
 
   // // Applies a bit of randomness to the interval to prevent clumping.
   // const random = Math.random();
@@ -55,8 +54,8 @@ export function calculateNewInterval(
  * @param interval The study interval (days).
  * @returns The due date.
  */
-export function calculateDueDate(interval: number): UTCDate {
-  const date = new UTCDate(UTCDate.now() + interval * 1000 * 60 * 60 * 24);
+export function calculateDueDate(interval: number): Date {
+  const date = new Date(Date.now() + interval * 1000 * 60 * 60 * 24);
   date.setHours(0, 0, 0, 0); // Truncates to midnight.
   return date;
 }

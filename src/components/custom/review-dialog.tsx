@@ -1,47 +1,62 @@
 import { differenceInCalendarDays } from "date-fns";
 import { ExternalLinkIcon } from "lucide-react";
-import Link from "next/link";
 import { useRef } from "react";
 
-import { Problem, Rating, Study } from "@/db/types";
-import { useAttempt } from "@/hooks/use-attempt";
-import { useIsMobile } from "@/hooks/use-is-mobile";
-import { calculateDueDate, calculateNewInterval } from "@/lib/repetition";
-import { UTCDate, utc } from "@date-fns/utc";
-import { DialogClose } from "@radix-ui/react-dialog";
-
-import { Button } from "../ui/button";
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-is-mobile";
+import { type Review, db } from "@/lib/db";
+import type { Problem } from "@/lib/problems";
+import {
+  type Rating,
+  calculateDueDate,
+  calculateNewEase,
+  calculateNewInterval,
+} from "@/lib/repetition";
+
+import { Button } from "../ui/button";
+import { DialogHeader } from "../ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+
+async function submit(id: number, rating: Rating) {
+  return await db.transaction("readwrite", db.reviews, async (tx) => {
+    const review = await tx.reviews.get(id);
+    if (!review) throw Error("Review does not exist!");
+
+    const ease = calculateNewEase(review.ease, rating);
+    const interval = calculateNewInterval(review.interval, review.ease, rating);
+    const due = calculateDueDate(interval);
+    const count = review.count + 1;
+
+    await tx.reviews.update(id, { ease, interval, due, count });
+  });
+}
 
 function getTooltipText(interval: number, ease: number, rating: Rating) {
   if (rating === "again") return "Tomorrow";
 
   const due = calculateDueDate(calculateNewInterval(interval, ease, rating));
-  const days = differenceInCalendarDays(due, new UTCDate(), { in: utc });
+  const days = differenceInCalendarDays(due, new Date());
 
   return days > 1 ? `${days} days` : `${days} day`;
 }
 
-export default function StudyDialog({
+export default function ReviewDialog({
   problem,
-  study,
+  review,
 }: {
   problem: Problem;
-  study: Study;
+  review: Review;
 }) {
   const isMobile = useIsMobile();
   const problemButtonRef = useRef<HTMLButtonElement>(null);
-
-  const { attempt } = useAttempt(study.id);
 
   return (
     <Dialog>
@@ -64,14 +79,14 @@ export default function StudyDialog({
               className="w-fit rounded-full"
               asChild
             >
-              <Link
+              <a
                 className="flex items-center"
                 href={problem.url}
                 target="_blank"
               >
                 <p className="text-sm">Problem</p>
                 <ExternalLinkIcon className="size-3.5" />
-              </Link>
+              </a>
             </Button>
             <Button
               size="sm"
@@ -80,14 +95,14 @@ export default function StudyDialog({
               asChild
             >
               {problem.solution && (
-                <Link
+                <a
                   className="flex items-center"
                   href={problem.solution}
                   target="_blank"
                 >
                   <p className="text-sm">Solution</p>
                   <ExternalLinkIcon className="size-3.5" />
-                </Link>
+                </a>
               )}
             </Button>
           </div>
@@ -103,14 +118,15 @@ export default function StudyDialog({
                   <Button
                     variant="outline"
                     className="border-red-500 bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-500"
-                    onClick={() => attempt("again")}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onClick={() => submit(review.id, "again")}
                   >
                     Again
                   </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{getTooltipText(study.interval, study.ease, "again")}</p>
+                <p>{getTooltipText(review.interval, review.ease, "again")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -119,14 +135,15 @@ export default function StudyDialog({
                   <Button
                     variant="outline"
                     className="border-amber-500 bg-amber-50 text-amber-500 hover:bg-amber-100 hover:text-amber-500"
-                    onClick={() => attempt("hard")}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onClick={() => submit(review.id, "hard")}
                   >
                     Hard
                   </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent>
-                <p>{getTooltipText(study.interval, study.ease, "hard")}</p>
+                <p>{getTooltipText(review.interval, review.ease, "hard")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -135,14 +152,15 @@ export default function StudyDialog({
                   <Button
                     variant="outline"
                     className="border-blue-500 bg-blue-50 text-blue-500 hover:bg-blue-100 hover:text-blue-500"
-                    onClick={() => attempt("good")}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onClick={() => submit(review.id, "good")}
                   >
                     Good
                   </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "top"}>
-                <p>{getTooltipText(study.interval, study.ease, "good")}</p>
+                <p>{getTooltipText(review.interval, review.ease, "good")}</p>
               </TooltipContent>
             </Tooltip>
             <Tooltip>
@@ -151,14 +169,15 @@ export default function StudyDialog({
                   <Button
                     variant="outline"
                     className="border-green-500 bg-green-50 text-green-500 hover:bg-green-100 hover:text-green-500"
-                    onClick={() => attempt("easy")}
+                    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+                    onClick={() => submit(review.id, "easy")}
                   >
                     Easy
                   </Button>
                 </DialogClose>
               </TooltipTrigger>
               <TooltipContent side={isMobile ? "bottom" : "top"}>
-                <p>{getTooltipText(study.interval, study.ease, "easy")}</p>
+                <p>{getTooltipText(review.interval, review.ease, "easy")}</p>
               </TooltipContent>
             </Tooltip>
           </div>

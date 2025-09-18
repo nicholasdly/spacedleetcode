@@ -1,10 +1,17 @@
 import { useLiveQuery } from "dexie-react-hooks";
 import { InfoIcon } from "lucide-react";
 
-import ReviewTable from "./components/custom/review-table";
-import { Alert, AlertDescription, AlertTitle } from "./components/ui/alert";
-import { type Review, db } from "./lib/db";
-import { difficulties, problems, topics } from "./lib/problems";
+import { GitHubIcon } from "@/components/custom/icons";
+import ReviewTable from "@/components/custom/review-table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { type Review, db } from "@/lib/db";
+import { difficulties, problems, topics } from "@/lib/problems";
 
 function sort(reviews: Review[]) {
   // Sort by topic.
@@ -36,10 +43,25 @@ export default function App() {
   return (
     <div className="mx-auto max-w-2xl p-4">
       <header className="mb-4">
-        <h1 className="mb-1 text-xl font-semibold sm:text-2xl">
-          spacedleetcode.com
-        </h1>
-        <p className="text-muted-foreground text-sm sm:text-base">
+        <div className="flex justify-between">
+          <h1 className="mb-1 text-xl font-semibold sm:text-2xl">
+            spacedleetcode.com
+          </h1>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" variant="outline" asChild>
+                <a
+                  href="https://github.com/nicholasdly/spacedleetcode"
+                  target="_blank"
+                >
+                  <GitHubIcon />
+                </a>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Star this on GitHub!</TooltipContent>
+          </Tooltip>
+        </div>
+        <p className="text-muted-foreground max-w-3/4 text-sm sm:text-base">
           A spaced repetition system for effectively studying popular technical
           interview problems.
         </p>

@@ -1,6 +1,7 @@
 import { differenceInCalendarDays } from "date-fns";
 import { ExternalLinkIcon } from "lucide-react";
 import { useRef } from "react";
+import { toast } from "sonner";
 
 import {
   Dialog,
@@ -26,7 +27,7 @@ import { DialogHeader } from "../ui/dialog";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 async function submit(id: string, rating: Rating) {
-  return await db.transaction("readwrite", db.reviews, async (tx) => {
+  await db.transaction("readwrite", db.reviews, async (tx) => {
     const review = await tx.reviews.get(id);
     if (!review) throw Error("Review does not exist!");
 
@@ -36,6 +37,15 @@ async function submit(id: string, rating: Rating) {
     const count = review.count + 1;
 
     await tx.reviews.update(id, { ease, interval, due, count });
+
+    const days = differenceInCalendarDays(due, new Date());
+
+    const message =
+      days > 1
+        ? `Nice job! Do this problem again in ${days} days!`
+        : "Don't worry, try this problem again tomorrow!";
+
+    toast.success(message);
   });
 }
 

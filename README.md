@@ -7,7 +7,8 @@
 - Vite + TypeScript + SWC
 - Tailwind CSS + shadcn/ui
 - IndexedDB + Dexie.js
-- Prettier + ESLint
+- ESLint + Prettier
+- Vitest
 
 ## Getting Started
 
@@ -17,11 +18,12 @@ There aren't many _mandatory_ prerequisites other than **npm**.
 2. Download dependencies via `npm i`.
 3. Start a local development server via `npm run dev`.
 
-Before making a contribution, be sure to run the typechecker and linter:
+Before making a contribution, be sure to run the following scripts:
 
 1. Run a typecheck via `npm run typecheck`.
 2. Run ESLint via `npm run lint`.
 3. Run Prettier via `npm run format`.
+4. Run Vitest via `npm run test`.
 
 ## License
 

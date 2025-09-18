@@ -39,13 +39,6 @@ export function calculateNewInterval(
   if (rating === "good") interval = Math.min(30, interval * ease);
   if (rating === "easy") interval = Math.min(90, interval * ease * 1.2);
 
-  // // Applies a bit of randomness to the interval to prevent clumping.
-  // const random = Math.random();
-  // const fuzz = 0.05 + random * 0.05;
-  // const sign = random < 0.5 ? -1 : 1;
-
-  // interval *= 1 + fuzz * sign;
-
   return Math.max(1, interval);
 }
 
